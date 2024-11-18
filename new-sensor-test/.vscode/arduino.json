@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:mega",
+    "sketch": "squid-game-floor-X-col-X-v1\\squid-game-floor-X-col-X-v1.ino",
+    "configuration": "cpu=atmega2560",
+    "port": "COM9"
+}
