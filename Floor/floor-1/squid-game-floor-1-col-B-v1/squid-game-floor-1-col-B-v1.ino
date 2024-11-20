@@ -4,12 +4,10 @@
 #define NUM_DIODS 140
 #define NUM_TILES 12
 #define BUFF_SIZE 180
-// #define BUFF_SIZE 80
 #define MAX_BRIGHT 30
 #define STEP_ANIMATION 10
 
 const int neighborThreshold = 1;
-// const int loopDelay = 20;
 const int loopDelay = 5;
 
 const int ledPins[NUM_TILES] = {2,3,4,5,6,7,8,9,10,11,12,13};
@@ -41,49 +39,43 @@ int measures[NUM_TILES][BUFF_SIZE];
 float means[NUM_TILES];
 
 int gameState = 0;
-
 bool enableList[NUM_TILES] = {
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
+    true,   // 0
+    true,   // 1  
+    true,   // 2
+    true,  // 3
+    true,   // 4
+    true,   // 5
+    true,   // 6
+    true,   // 7
+    true,   // 8
+    true,   // 9
+    true,   // 10
+    true,  // 11
 };
 
 float adjust[NUM_TILES] = {
-    20,  // 0
-    100, // 1
-    60,  // 2
-    100, // 3
-    25,  // 4
-    10,  // 5
-    75,  // 6
-    10,  // 7
-    30,  // 8
-    30,  // 9
-    30,  // 10 // (25 -> 30), 
-    50,  // 11 //
+    20, // 0  // ( -> ), (->),
+    50, // 1 // (95 -> 50), (->),
+    40, // 2 //( -> ),  (->),
+    10, // 3 //(40 -> 10),  (->),
+    35, // 4 //( -> ),  (30->35),
+    40, // 5 //( -> ),  (->),
+    60, // 6 //( -> ),  (->),
+    15, // 7 //(30 -> 25),  (->),
+    20, // 8 //(28 -> 20),  (->),
+    15, // 9 //(70 -> 20),  (->),
+    80, // 10 //( -> ),  (->),
+    50, // 11 //( -> ),  (->),
 };
 
 int prevSec[NUM_TILES]; // Example initial array
-
-const int buttonPin = 22; // Pin connected to the button
-int buttonState = 0;     // Variable to store the button state
 
 void setup()
 {
     Serial.begin(115200);
     // Seed the random number generator with a unique value (using an analog input pin)
     randomSeed(analogRead(13));
-
-    pinMode(buttonPin, INPUT_PULLUP); // Use internal pull-up resistor
 
     for (int strip = 0; strip < NUM_TILES; strip++)
     {
@@ -150,18 +142,7 @@ void generateSecuence()
                 trueCounter = 0;
             }
         }
-
-        //::Serial.println(String(randomValue) + " <- " + String(secuence[i]));
-        
     }
-
-    secuence[1] = false;
-    secuence[2] = true;
-    secuence[3] = false;
-
-    secuence[9] = false;
-    secuence[10] = true;
-    secuence[11] = true;
 
     for (int j = NUM_TILES - 1; j >= 0; j--)
     {
@@ -222,6 +203,7 @@ void deathAnimation()
             }
         }
     }
+
     for (int value = 0; value < MAX_BRIGHT; value += STEP_ANIMATION)
     {
         for (int strip = 0; strip < NUM_TILES; strip++)
@@ -365,19 +347,19 @@ void mainLoop()
     {
         raw = analogRead(analogPins[sensor]);
 
-        //if (sensor == 5)
+        //if (sensor == 0)
         if (enableList[sensor])
         {
             
-            Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
-            Serial.println("    -> mean: " + String(means[sensor]));
+            /* Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
+            Serial.println("    -> mean: " + String(means[sensor])); */
             
 
             if (raw > means[sensor] + adjust[sensor])
             {
                 Serial.println("hit!!");
                 enableList[sensor] = false;
-                lastStep = sensor;
+                lastStep = sensor+1;
 
                 if (secuence[sensor]) // hit death
                 {
@@ -393,6 +375,7 @@ void mainLoop()
                     }
                     if (sensor == lastTile)
                     {
+
                         liveAnimation();
                         gameState = -2;
                     }

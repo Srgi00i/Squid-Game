@@ -10,8 +10,8 @@
 const int neighborThreshold = 1;
 const int loopDelay = 5;
 
-const int ledPins[NUM_TILES] = {2,3,4,5,6,7,8,9,10,11,12,13};
-const int analogPins[NUM_TILES] = {A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,};
+const int ledPins[NUM_TILES] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+const int analogPins[NUM_TILES] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
 
 // Create an instance of the Adafruit_NeoPixel class
 Adafruit_NeoPixel strips[NUM_TILES] = {};
@@ -25,7 +25,6 @@ int measures[NUM_TILES][BUFF_SIZE];
 float means[NUM_TILES];
 
 int gameState = 0;
-
 bool enableList[NUM_TILES] = {
     true,
     true,
@@ -42,18 +41,18 @@ bool enableList[NUM_TILES] = {
 };
 
 float adjust[NUM_TILES] = {
-    15,  // id: 0 // (50 -> 15),
-    15,  // id: 1 // (30 -> 15),
-    20,  // id: 2 // (60 -> 20),
-    100, // id: 3 // ( -> ),
-    50,  // id: 4 // ( -> ),
-    40,  // id: 5 // ( -> ),
-    80,  // id: 6 // ( -> ),
-    20,  // id: 7 // (30 -> 20),
-    50,  // id: 8 // (80 -> 50),
-    110, // id: 9 // ( -> ),
-    50, // id: 10 // (100 -> 50),
-    10,  // id: 11 // (20 -> 10),
+    100, // 0  // ( -> ),     (->),
+    100, // 1  // ( -> ),     (->),
+    20,  // 2  // (60 -> 40), (40->20),
+    50,  // 3  // (100 -> ),  (->),
+    100, // 4  // ( -> ),     (->),
+    50,  // 5  // (100 -> ),  (->),
+    40,  // 6  // ( -> ),     (->),
+    25,  // 7  // (28 -> ),   (->),
+    30,  // 8  // ( -> ),     (40->30),
+    25,  // 9  // (60 -> ),   (->),
+    60,  // 10 // ( -> ),     (->),
+    25,  // 11 // ( -> ),     (->),
 };
 
 int prevSec[NUM_TILES]; // Example initial array
@@ -61,8 +60,9 @@ int prevSec[NUM_TILES]; // Example initial array
 void setup()
 {
     Serial.begin(115200);
+
     // Seed the random number generator with a unique value (using an analog input pin)
-    randomSeed(analogRead(13));
+    randomSeed(analogRead(0));
 
     for (int strip = 0; strip < NUM_TILES; strip++)
     {
@@ -72,8 +72,6 @@ void setup()
         // Turn off all LEDs
         strips[strip].show();
     }
-
-    
 }
 
 void generateSecuence()
@@ -102,15 +100,13 @@ void generateSecuence()
                     trueCounter = 0;
                     falseCounter += 1;
                 }
-                else 
+                else
                 {
                     secuence[i] = true;
                     trueCounter += 1;
                     falseCounter = 0;
                 }
-                
             }
-            
         }
         else
         {
@@ -127,11 +123,9 @@ void generateSecuence()
                 trueCounter = 0;
             }
         }
-
-        //::Serial.println(String(randomValue) + " <- " + String(secuence[i]));
-        
     }
 
+    // add aditional conditions
 
     for (int j = NUM_TILES - 1; j >= 0; j--)
     {
@@ -147,25 +141,25 @@ void initAnimation()
 {
     for (int counter = 0; counter < 3; counter++)
     {
-        
-            for (int value = 0; value < MAX_BRIGHT; value += STEP_ANIMATION)
+
+        for (int value = 0; value < MAX_BRIGHT; value += STEP_ANIMATION)
+        {
+            for (int strip = 0; strip < NUM_TILES; strip++)
             {
-                for (int strip = 0; strip < NUM_TILES; strip++)
-                {
-                    /* code */
-                    strips[strip].fill(strips[strip].Color(0, 0, value));
-                    strips[strip].show();
-                }
+                /* code */
+                strips[strip].fill(strips[strip].Color(0, 0, value));
+                strips[strip].show();
             }
-            delay(500);
-            for (int invValue = MAX_BRIGHT; invValue >= 0; invValue -= STEP_ANIMATION)
+        }
+        delay(500);
+        for (int invValue = MAX_BRIGHT; invValue >= 0; invValue -= STEP_ANIMATION)
+        {
+            for (int strip = 0; strip < NUM_TILES; strip++)
             {
-                for (int strip = 0; strip < NUM_TILES; strip++)
-                {
-                    strips[strip].fill(strips[strip].Color(0, 0, invValue));
-                    strips[strip].show();
-                }
+                strips[strip].fill(strips[strip].Color(0, 0, invValue));
+                strips[strip].show();
             }
+        }
     }
 }
 
@@ -192,6 +186,7 @@ void deathAnimation()
             }
         }
     }
+
     for (int value = 0; value < MAX_BRIGHT; value += STEP_ANIMATION)
     {
         for (int strip = 0; strip < NUM_TILES; strip++)
@@ -240,7 +235,7 @@ void showAnimation()
         {
             strips[strip].fill(strips[strip].Color(0, MAX_BRIGHT, 0));
         }
-        
+
         strips[strip].show();
     }
 
@@ -262,7 +257,6 @@ void initialization()
     Serial.println(":[ Initialization ]:");
     lastStep = 0;
 
-    
     for (int a = 0; a < NUM_TILES; a++)
     {
         prevSec[a] = secuence[a];
@@ -272,17 +266,15 @@ void initialization()
     generateSecuence();
 
     bool test = true;
-
     for (int b = 0; b < NUM_TILES; b++)
     {
         if (prevSec[b] != secuence[b])
         {
             test = false;
         }
-        
     }
 
-    while(test)
+    while (test)
     {
         for (int c = 0; c < NUM_TILES; c++)
         {
@@ -302,7 +294,7 @@ void initialization()
     Serial.println("Last tile: " + String(lastTile));
 
     initAnimation();
-    
+
     int raw;
     for (int count = 0; count < BUFF_SIZE; count++)
     {
@@ -314,10 +306,9 @@ void initialization()
         }
     }
 
-    // test
-    /* for (int tt = 0; tt < NUM_TILES; tt++)
+    /* for (int t = 0; t < NUM_TILES; t++)
     {
-        secuence[tt] = false;
+        secuence[t] = false;
     }
     lastTile = 11; */
 
@@ -326,7 +317,6 @@ void initialization()
     blackoutAnimation();
 
     gameState = 1; // activate
-    
 }
 
 void mainLoop()
@@ -337,19 +327,18 @@ void mainLoop()
     {
         raw = analogRead(analogPins[sensor]);
 
-        //if (sensor == 4)
+        // if (sensor > 7)
         if (enableList[sensor])
         {
-            
-            /* Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
-            Serial.println("    -> mean: " + String(means[sensor])); */
-            
+
+            /*  Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
+             Serial.println("    -> mean: " + String(means[sensor])); */
 
             if (raw > means[sensor] + adjust[sensor])
             {
                 Serial.println("hit!!");
                 enableList[sensor] = false;
-                lastStep = sensor;
+                lastStep = sensor + 1;
 
                 if (secuence[sensor]) // hit death
                 {
@@ -378,9 +367,6 @@ void mainLoop()
                 updateArrayAndCalculateMean(sensor, raw);
             }
         }
-        
-        
-
     }
     Serial.println("---------------------------------------");
 }
@@ -403,33 +389,29 @@ float calculateMean(int id)
         sum += measures[id][i];
     }
 
-    return (sum / BUFF_SIZE);
+    return sum / BUFF_SIZE;
 }
 
 // Function to update array and calculate mean
 void updateArrayAndCalculateMean(int id, int newValue)
 {
-    
-        // Calculate mean before updating the array
-        float meanBefore = calculateMean(id);
-        // Serial.print("Mean before update: ");
-        // Serial.println(meanBefore);
+    // Calculate mean before updating the array
+    float meanBefore = calculateMean(id);
+    // Serial.print("Mean before update: ");
+    // Serial.println(meanBefore);
 
-        // Shift elements to the left and append new value
-        for (int i = 0; i < BUFF_SIZE - 1; i++)
-        {
-            measures[id][i] = measures[id][i + 1];
-        }
-        measures[id][BUFF_SIZE - 1] = newValue;
+    // Shift elements to the left and append new value
+    for (int i = 0; i < BUFF_SIZE - 1; i++)
+    {
+        measures[id][i] = measures[id][i + 1];
+    }
+    measures[id][BUFF_SIZE - 1] = newValue;
 
-        // Calculate mean after updating the array
-        float meanAfter = calculateMean(id);
-        // Serial.print("Mean after update: ");
-        // Serial.println(meanAfter);
-        means[id] = meanAfter;
-    
-    
-    
+    // Calculate mean after updating the array
+    float meanAfter = calculateMean(id);
+    // Serial.print("Mean after update: ");
+    // Serial.println(meanAfter);
+    means[id] = meanAfter;
 }
 
 void loop()

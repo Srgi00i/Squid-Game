@@ -11,21 +11,7 @@ const int neighborThreshold = 1;
 const int loopDelay = 5;
 
 const int ledPins[NUM_TILES] = {2,3,4,5,6,7,8,9,10,11,12,13};
-const int analogPins[NUM_TILES] = {
-    A0,
-    A1,
-    A2,
-    A3,
-    A4,
-    A5,
-    A6,
-    A7,
-    A8,
-    A9,
-    A10,
-    A11,
-};
-
+const int analogPins[NUM_TILES] = {A0,A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,};
 
 // Create an instance of the Adafruit_NeoPixel class
 Adafruit_NeoPixel strips[NUM_TILES] = {};
@@ -33,41 +19,42 @@ Adafruit_NeoPixel strips[NUM_TILES] = {};
 bool secuence[NUM_TILES] = {};
 bool prevSecuence[NUM_TILES] = {};
 int lastTile = 0;
-int lastStep = -1;
+int lastStep = 0;
 
 int measures[NUM_TILES][BUFF_SIZE];
 float means[NUM_TILES];
 
 int gameState = 0;
+
 bool enableList[NUM_TILES] = {
-    true,   // 0
-    true,   // 1  
-    true,   // 2
-    true,  // 3
-    true,   // 4
-    true,   // 5
-    true,   // 6
-    true,   // 7
-    true,   // 8
-    true,   // 9
-    true,   // 10
-    true,  // 11
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
 };
 
 float adjust[NUM_TILES] = {
-    20, // 0  // ( -> ),
-    50, // 1 // (95 -> 50),
-    40, // 2 //( -> ), 
-    10, // 3 //(40 -> 10), 
-    30, // 4 //( -> ), 
-    40, // 5 //( -> ), 
-    60, // 6 //( -> ), 
-    15, // 7 //(30 -> 25), 
-    20, // 8 //(28 -> 20), 
-    15, // 9 //(70 -> 20), 
-    80, // 10 //( -> ), 
-    50, // 11 //( -> ), 
-}; // Example initial array
+    15,  // id: 0 // (50 -> 15), (->),
+    10,  // id: 1 // (30 -> 15), (15->10),
+    10,  // id: 2 // (60 -> 20), (20->10),
+    70, // id: 3 // ( -> ), (100->70),
+    40,  // id: 4 // ( -> ), (50->40),
+    40,  // id: 5 // ( -> ), (->),
+    60,  // id: 6 // ( -> ), (80->60),
+    10,  // id: 7 // (30 -> 20), (20->10),
+    30,  // id: 8 // (80 -> 50), (50->30),
+    110, // id: 9 // ( -> ), (->),
+    50, // id: 10 // (100 -> 50), (->),
+    10,  // id: 11 // (20 -> 10), (->),
+};
 
 int prevSec[NUM_TILES]; // Example initial array
 
@@ -84,8 +71,6 @@ void setup()
         strips[strip].begin();
         // Turn off all LEDs
         strips[strip].show();
-
-        //pinMode(analogPins[strip], INPUT_PULLUP);
     }
 
     
@@ -142,7 +127,11 @@ void generateSecuence()
                 trueCounter = 0;
             }
         }
+
+        //::Serial.println(String(randomValue) + " <- " + String(secuence[i]));
+        
     }
+
 
     for (int j = NUM_TILES - 1; j >= 0; j--)
     {
@@ -203,7 +192,6 @@ void deathAnimation()
             }
         }
     }
-
     for (int value = 0; value < MAX_BRIGHT; value += STEP_ANIMATION)
     {
         for (int strip = 0; strip < NUM_TILES; strip++)
@@ -284,6 +272,7 @@ void initialization()
     generateSecuence();
 
     bool test = true;
+
     for (int b = 0; b < NUM_TILES; b++)
     {
         if (prevSec[b] != secuence[b])
@@ -325,9 +314,10 @@ void initialization()
         }
     }
 
-    /* for (int t = 0; t < NUM_TILES; t++)
+    // test
+    /* for (int tt = 0; tt < NUM_TILES; tt++)
     {
-        secuence[t] = false;
+        secuence[tt] = false;
     }
     lastTile = 11; */
 
@@ -347,19 +337,18 @@ void mainLoop()
     {
         raw = analogRead(analogPins[sensor]);
 
-        //if (sensor == 0)
+        //if (sensor == 4)
         if (enableList[sensor])
         {
-            
-            /* Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
-            Serial.println("    -> mean: " + String(means[sensor])); */
+            Serial.println("+ sensor_" + String(sensor) + ": [" + String(raw) + "]");
+            Serial.println("    -> mean: " + String(means[sensor]));
             
 
             if (raw > means[sensor] + adjust[sensor])
             {
                 Serial.println("hit!!");
                 enableList[sensor] = false;
-                lastStep = sensor;
+                lastStep = sensor+1;
 
                 if (secuence[sensor]) // hit death
                 {
@@ -373,9 +362,9 @@ void mainLoop()
                         strips[fillId].fill(strips[fillId].Color(0, MAX_BRIGHT, 0));
                         strips[fillId].show();
                     }
+                    // Victory state
                     if (sensor == lastTile)
                     {
-
                         liveAnimation();
                         gameState = -2;
                     }
@@ -413,29 +402,33 @@ float calculateMean(int id)
         sum += measures[id][i];
     }
 
-    return sum / BUFF_SIZE;
+    return (sum / BUFF_SIZE);
 }
 
 // Function to update array and calculate mean
 void updateArrayAndCalculateMean(int id, int newValue)
 {
-    // Calculate mean before updating the array
-    float meanBefore = calculateMean(id);
-    //Serial.print("Mean before update: ");
-    //Serial.println(meanBefore);
+    
+        // Calculate mean before updating the array
+        float meanBefore = calculateMean(id);
+        // Serial.print("Mean before update: ");
+        // Serial.println(meanBefore);
 
-    // Shift elements to the left and append new value
-    for (int i = 0; i < BUFF_SIZE - 1; i++)
-    {
-        measures[id][i] = measures[id][i + 1];
-    }
-    measures[id][BUFF_SIZE - 1] = newValue;
+        // Shift elements to the left and append new value
+        for (int i = 0; i < BUFF_SIZE - 1; i++)
+        {
+            measures[id][i] = measures[id][i + 1];
+        }
+        measures[id][BUFF_SIZE - 1] = newValue;
 
-    // Calculate mean after updating the array
-    float meanAfter = calculateMean(id);
-    //Serial.print("Mean after update: ");
-    //Serial.println(meanAfter);
-    means[id] = meanAfter;
+        // Calculate mean after updating the array
+        float meanAfter = calculateMean(id);
+        // Serial.print("Mean after update: ");
+        // Serial.println(meanAfter);
+        means[id] = meanAfter;
+    
+    
+    
 }
 
 void loop()
