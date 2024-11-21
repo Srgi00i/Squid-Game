@@ -16,7 +16,7 @@ AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 const int stepsPerRevolution = 200; // Adjust based on your motor's specs
 long targetPosition = 0;
 long encoderPosition = 0;
-int fact = 1;
+int fact = 10;
 
 void setup() {
 
@@ -25,10 +25,10 @@ void setup() {
   pinMode(EN_PIN,OUTPUT);
 
   // Initialize stepper motor parameters
-  stepper.setMaxSpeed(200 * fact);     // Set max speed
-  stepper.setAcceleration(100 * fact); // Set acceleration
+  stepper.setMaxSpeed(100 * fact);     // Set max speed
+  stepper.setAcceleration(50 * fact); // Set acceleration
 
-  stepper.moveTo(200*fact);
+  stepper.moveTo(50*fact);
 
   // Zero the encoder position
   //encoder.write(0);
