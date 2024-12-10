@@ -1,20 +1,43 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-#define SIG_PIN 21
+#define SIG_PIN_A 21
+#define SIG_PIN_B 23
+
+enum Code {
+    BUTTON_A,
+    BUTTON_B
+};
 
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message
 {
-    //char a[32];
-    int code;
-    //float c;
-    //bool d;
+    Code code;
 } struct_message;
 
 // Create a struct_message called myData
 struct_message myData;
+
+int actDuration = 200;
+
+void buttonFunctionA()
+{
+  Serial.println("Executing function A...");
+
+  digitalWrite(SIG_PIN_A, HIGH);
+  delay(actDuration);
+  digitalWrite(SIG_PIN_A, LOW);
+}
+
+void buttonFunctionB()
+{
+  Serial.println("Executing function B...");
+
+  digitalWrite(SIG_PIN_B, HIGH);
+  delay(actDuration);
+  digitalWrite(SIG_PIN_B, LOW);
+}
 
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
@@ -22,25 +45,19 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
     memcpy(&myData, incomingData, sizeof(myData));
     Serial.print("Bytes received: ");
     Serial.println(len);
-    //Serial.print("Char: ");
-    //Serial.println(myData.a);
     Serial.print("Code: ");
     Serial.println(myData.code);
-    //Serial.print("Float: ");
-    //Serial.println(myData.c);
-    //Serial.print("Bool: ");
-    //Serial.println(myData.d);
     Serial.println();
 
-    if (myData.code == 1)
+    // Button A
+    if (myData.code == BUTTON_A)
     {
-      digitalWrite(SIG_PIN, HIGH);
-      delay(500);
-      digitalWrite(SIG_PIN, LOW);
+      buttonFunctionA();
     }
-    else if (myData.code == 2)
+    // Button B
+    else if (myData.code == BUTTON_B)
     {
-
+      buttonFunctionB();
     }
     
 }
@@ -64,8 +81,10 @@ void setup()
     // get recv packer info
     esp_now_register_recv_cb(esp_now_recv_cb_t(OnDataRecv));
 
-    pinMode(SIG_PIN, OUTPUT);
-    digitalWrite(SIG_PIN, LOW);
+    pinMode(SIG_PIN_A, OUTPUT);
+    pinMode(SIG_PIN_B, OUTPUT);
+    digitalWrite(SIG_PIN_A, LOW);
+    digitalWrite(SIG_PIN_B, LOW);
 }
 
 void loop()

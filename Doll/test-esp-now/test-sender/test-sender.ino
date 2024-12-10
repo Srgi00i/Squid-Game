@@ -4,17 +4,19 @@
 #define BUTTON_A_PIN 23
 #define BUTTON_B_PIN 19
 
+enum Code {
+    BUTTON_A,
+    BUTTON_B 
+};
+
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {0xc8,0xf0,0x9e,0xf8,0x76,0x04};
+uint8_t broadcastAddress[] = {0xf8,0xb3,0xb7,0x2a,0xd6,0x98};
 
 // Structure example to send data
 // Must match the receiver structure
 typedef struct struct_message
 {
-    //char a[32];
     int code;
-    //float c;
-    //bool d;
 } struct_message;
 
 // Create a struct_message called myData
@@ -70,10 +72,7 @@ void setup()
 void sendSignal(int code)
 {
     // Set values to send
-    //strcpy(myData.a, "THIS IS A CHAR");
     myData.code = code;
-    //myData.c = 1.2;
-    //myData.d = false;
 
     // Send message via ESP-NOW
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *)&myData, sizeof(myData));
@@ -93,15 +92,15 @@ void loop()
     if (digitalRead(BUTTON_A_PIN) == LOW)
     {
       Serial.println("Button B pressed!");
-      sendSignal(2);
-      delay(2000);
+      sendSignal(BUTTON_B);
+      //delay(2000);
     }
     if (digitalRead(BUTTON_B_PIN) == LOW)
     {
       Serial.println("Button A pressed!");
-      sendSignal(1);
-      delay(2000);
+      sendSignal(BUTTON_A);
+      //delay(2000);
     }
 
-    delay(50);
+    //delay(50);
 }
