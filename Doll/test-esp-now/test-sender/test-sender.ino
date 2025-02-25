@@ -10,7 +10,8 @@ enum Code {
 };
 
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {0xf8,0xb3,0xb7,0x2a,0xd6,0x98};
+uint8_t broadcastAddress[] = {0xc8,0xf0,0x9e,0xf8,0x76,0x04};     // M1
+// uint8_t broadcastAddress[] = {0xf8,0xb3,0xb7,0x2a,0xd6,0x98}; // M2
 
 // Structure example to send data
 // Must match the receiver structure
@@ -37,7 +38,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 void setup()
 {
     // Init Serial Monitor
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     // Set device as a Wi-Fi Station
     WiFi.mode(WIFI_STA);
@@ -67,6 +68,8 @@ void setup()
 
     pinMode(BUTTON_A_PIN, INPUT_PULLUP);
     pinMode(BUTTON_B_PIN, INPUT_PULLUP);
+
+    Serial.println("Setup done. Hello new world!");
 }
 
 void sendSignal(int code)

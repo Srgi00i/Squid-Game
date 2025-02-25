@@ -5,10 +5,10 @@
 #define MAX_BRIGHT 30       // max brightness for the LEDs (DO NOT TOUCH)
 #define STEP_ANIMATION 10   // size of the step for dimming in animations
 
-const bool debug = true;   // activates debug mode (flags, all green, ...)
+const bool debug = false;   // activates debug mode (flags, all green, ...)
 
 const int neighborThreshold = 1;
-const int loopDelay = 500;
+const int loopDelay = 5;
 
 const int ledPins[NUM_TILES] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
 const int digitalPins[NUM_TILES] = {23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45};
@@ -263,7 +263,9 @@ void initialization()
             secuence[t] = false;
         }
         lastTile = 11;
-    }   
+    }
+
+    delay(10000);   
 
     showAnimation();
 
